@@ -1,0 +1,39 @@
+[Unit]
+Description=Atuin shell history sync server
+After=network-online.target
+Wants=network-online.target
+
+[Container]
+Image=ghcr.io/atuinsh/atuin:latest
+AutoUpdate=registry
+Exec=start
+
+# User Namespace Mapping - Container UID 1000 = Host UID (atuin)
+# atuin:x:1000:1000 on debian:bookworm-slim (confirmed via /etc/passwd)
+UserNS=keep-id:uid=1000,gid=1000
+User=1000
+Group=1000
+
+# Environment variables
+EnvironmentFile=%h/.config/containers/systemd/atuin.env
+EnvironmentFile=-%h/.config/containers/systemd/atuin.override.env
+
+# Volumes (bind mounts)
+Volume=%h/config:/config:Z
+
+# Port mapping (host:container)
+# Bind to localhost only when using a reverse proxy, to prevent direct external access
+PublishPort=127.0.0.1:8888:8888
+
+# Health check
+HealthCmd=curl -f http://localhost:8888/healthz || exit 1
+HealthInterval=30s
+HealthTimeout=10s
+HealthRetries=3
+
+[Service]
+Restart=always
+TimeoutStartSec=900
+
+[Install]
+WantedBy=default.target
