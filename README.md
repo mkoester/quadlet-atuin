@@ -11,6 +11,8 @@ This project was created with the help of Claude Code and https://github.com/mko
 | `atuin.container` | Quadlet unit file |
 | `atuin.env` | Default environment variables |
 | `atuin.override.env.template` | Template for local overrides |
+| `atuin-backup.service` | Systemd service: creates SQLite backup via `sqlite3 .backup` |
+| `atuin-backup.timer` | Systemd timer: triggers the backup daily |
 
 ## Setup
 
@@ -60,6 +62,32 @@ For example, once all users have registered, disable open registration:
 sudo -u atuin nano ~atuin/.config/containers/systemd/atuin.override.env
 # Add: ATUIN_OPEN_REGISTRATION=false
 sudo -u atuin systemctl --user restart atuin
+```
+
+## Backup
+
+The backup writes a consistent SQLite snapshot to `/var/backups/atuin/` via `sqlite3 .backup` (online, no service downtime). Requires `sqlite3` to be installed on the host (`sudo dnf install sqlite` / `sudo apt install sqlite3`). A remote machine pulls it over SSH using the shared `backupuser`. See the [general backup setup](https://github.com/mkoester/quadlet-my-guidelines#backup) in the guidelines for the one-time server-wide setup (group, backup user, SSH key).
+
+```sh
+# 1. Create backup staging directory (owned by atuin, readable by backup-readers group)
+sudo mkdir -p /var/backups/atuin
+sudo chown atuin:backup-readers /var/backups/atuin
+sudo chmod 750 /var/backups/atuin
+
+# 2. Symlink the backup service and timer from the repo
+sudo -u atuin mkdir -p ~atuin/.config/systemd/user
+sudo -u atuin ln -s $(pwd)/atuin-backup.service ~atuin/.config/systemd/user/atuin-backup.service
+sudo -u atuin ln -s $(pwd)/atuin-backup.timer ~atuin/.config/systemd/user/atuin-backup.timer
+
+# 3. Enable and start the timer
+sudo -u atuin systemctl --user daemon-reload
+sudo -u atuin systemctl --user enable --now atuin-backup.timer
+```
+
+### On the remote (backup) machine
+
+```sh
+rsync -az backupuser@atuin-host:/var/backups/atuin/ /path/to/local/backup/atuin/
 ```
 
 ## Notes

@@ -1,0 +1,6 @@
+[Unit]
+Description=Atuin SQLite backup
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/sqlite3 %h/config/atuin.db ".backup /var/backups/atuin/atuin.db"
