@@ -98,3 +98,7 @@ rsync -az backupuser@atuin-host:/var/backups/atuin/ /path/to/local/backup/atuin/
   ```sh
   sudo -u atuin systemctl --user enable --now podman-auto-update.timer
   ```
+- To prune old images automatically, enable the system-wide prune timer (see [image pruning setup](https://github.com/mkoester/quadlet-my-guidelines#image-pruning) for the one-time system setup). Replace `30` with the desired retention period in days:
+  ```sh
+  sudo -u atuin systemctl --user enable --now podman-image-prune@30.timer
+  ```
