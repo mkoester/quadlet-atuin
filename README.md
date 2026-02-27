@@ -45,11 +45,11 @@ sudo -u atuin ln -s $REPO/atuin.env ~atuin/.config/containers/systemd/atuin.env
 sudo -u atuin ln -s $REPO/atuin.override.env ~atuin/.config/containers/systemd/atuin.override.env
 
 # 7. Reload and start
-sudo -u atuin systemctl --user daemon-reload
-sudo -u atuin systemctl --user start atuin
+sudo -u atuin XDG_RUNTIME_DIR=/run/user/$(id -u atuin) systemctl --user daemon-reload
+sudo -u atuin XDG_RUNTIME_DIR=/run/user/$(id -u atuin) systemctl --user start atuin
 
 # 8. Verify
-sudo -u atuin systemctl --user status atuin
+sudo -u atuin XDG_RUNTIME_DIR=/run/user/$(id -u atuin) systemctl --user status atuin
 ```
 
 ## Configuration
@@ -68,7 +68,7 @@ To override any value locally, edit `atuin.override.env` in the repo clone:
 ```sh
 sudo -u atuin nano ~atuin/quadlet-atuin/atuin.override.env
 # Add: ATUIN_OPEN_REGISTRATION=false
-sudo -u atuin systemctl --user restart atuin
+sudo -u atuin XDG_RUNTIME_DIR=/run/user/$(id -u atuin) systemctl --user restart atuin
 ```
 
 ## Backup
@@ -87,8 +87,8 @@ sudo -u atuin ln -s $REPO/atuin-backup.service ~atuin/.config/systemd/user/atuin
 sudo -u atuin ln -s $REPO/atuin-backup.timer ~atuin/.config/systemd/user/atuin-backup.timer
 
 # 3. Enable and start the timer
-sudo -u atuin systemctl --user daemon-reload
-sudo -u atuin systemctl --user enable --now atuin-backup.timer
+sudo -u atuin XDG_RUNTIME_DIR=/run/user/$(id -u atuin) systemctl --user daemon-reload
+sudo -u atuin XDG_RUNTIME_DIR=/run/user/$(id -u atuin) systemctl --user enable --now atuin-backup.timer
 ```
 
 ### On the remote (backup) machine
@@ -103,9 +103,9 @@ rsync -az backupuser@atuin-host:/var/backups/atuin/ /path/to/local/backup/atuin/
 - The SQLite database is stored at `~atuin/config/atuin.db` on the host.
 - `AutoUpdate=registry` is enabled; activate the timer once to get automatic image updates:
   ```sh
-  sudo -u atuin systemctl --user enable --now podman-auto-update.timer
+  sudo -u atuin XDG_RUNTIME_DIR=/run/user/$(id -u atuin) systemctl --user enable --now podman-auto-update.timer
   ```
 - To prune old images automatically, enable the system-wide prune timer (see [image pruning setup](https://github.com/mkoester/quadlet-my-guidelines#image-pruning) for the one-time system setup). Replace `30` with the desired retention period in days:
   ```sh
-  sudo -u atuin systemctl --user enable --now podman-image-prune@30.timer
+  sudo -u atuin XDG_RUNTIME_DIR=/run/user/$(id -u atuin) systemctl --user enable --now podman-image-prune@30.timer
   ```
