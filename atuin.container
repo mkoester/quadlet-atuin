@@ -16,7 +16,7 @@ Group=1000
 
 # Environment variables
 EnvironmentFile=%h/.config/containers/systemd/atuin.env
-EnvironmentFile=-%h/.config/containers/systemd/atuin.override.env
+EnvironmentFile=%h/.config/containers/systemd/atuin.override.env
 
 # Volumes (bind mounts)
 Volume=%h/config:/config:Z
