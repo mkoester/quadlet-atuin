@@ -16,7 +16,10 @@ This project was created with the help of Claude Code and https://github.com/mko
 
 ## Setup
 
-Run these commands from the root of this repository.
+```sh
+REPO_URL=https://github.com/mkoester/quadlet-atuin.git
+REPO=~atuin/quadlet-atuin
+```
 
 ```sh
 # 1. Create service user (regular user, home in /var/lib)
@@ -25,22 +28,27 @@ sudo useradd -m -d /var/lib/atuin -s /usr/sbin/nologin atuin
 # 2. Enable linger
 sudo loginctl enable-linger atuin
 
-# 3. Create quadlet and data directories
+# 3. Clone this repo into the service user's home
+sudo -u atuin git clone $REPO_URL $REPO
+
+# 4. Create quadlet and data directories
 sudo -u atuin mkdir -p ~atuin/.config/containers/systemd
 sudo -u atuin mkdir -p ~atuin/config
 
-# 4. Symlink .container and .env from the repo
-sudo -u atuin ln -s $(pwd)/atuin.container ~atuin/.config/containers/systemd/atuin.container
-sudo -u atuin ln -s $(pwd)/atuin.env ~atuin/.config/containers/systemd/atuin.env
+# 5. Create .override.env from template and fill in required values
+sudo -u atuin cp $REPO/atuin.override.env.template $REPO/atuin.override.env
+sudo -u atuin nano $REPO/atuin.override.env
 
-# 5. Create .override.env from template (edit as needed)
-sudo -u atuin cp $(pwd)/atuin.override.env.template ~atuin/.config/containers/systemd/atuin.override.env
+# 6. Symlink all quadlet files from the repo
+sudo -u atuin ln -s $REPO/atuin.container ~atuin/.config/containers/systemd/atuin.container
+sudo -u atuin ln -s $REPO/atuin.env ~atuin/.config/containers/systemd/atuin.env
+sudo -u atuin ln -s $REPO/atuin.override.env ~atuin/.config/containers/systemd/atuin.override.env
 
-# 6. Reload and start
+# 7. Reload and start
 sudo -u atuin systemctl --user daemon-reload
 sudo -u atuin systemctl --user start atuin
 
-# 7. Verify
+# 8. Verify
 sudo -u atuin systemctl --user status atuin
 ```
 
@@ -55,11 +63,10 @@ sudo -u atuin systemctl --user status atuin
 | `ATUIN_OPEN_REGISTRATION` | `true` | Allow new user registrations |
 | `ATUIN_DB_URI` | `sqlite:///config/atuin.db` | Database URI (SQLite in `~/config`) |
 
-To override any value locally, edit `~atuin/.config/containers/systemd/atuin.override.env`.
-For example, once all users have registered, disable open registration:
+To override any value locally, edit `atuin.override.env` in the repo clone:
 
 ```sh
-sudo -u atuin nano ~atuin/.config/containers/systemd/atuin.override.env
+sudo -u atuin nano ~atuin/quadlet-atuin/atuin.override.env
 # Add: ATUIN_OPEN_REGISTRATION=false
 sudo -u atuin systemctl --user restart atuin
 ```
@@ -76,8 +83,8 @@ sudo chmod 750 /var/backups/atuin
 
 # 2. Symlink the backup service and timer from the repo
 sudo -u atuin mkdir -p ~atuin/.config/systemd/user
-sudo -u atuin ln -s $(pwd)/atuin-backup.service ~atuin/.config/systemd/user/atuin-backup.service
-sudo -u atuin ln -s $(pwd)/atuin-backup.timer ~atuin/.config/systemd/user/atuin-backup.timer
+sudo -u atuin ln -s $REPO/atuin-backup.service ~atuin/.config/systemd/user/atuin-backup.service
+sudo -u atuin ln -s $REPO/atuin-backup.timer ~atuin/.config/systemd/user/atuin-backup.timer
 
 # 3. Enable and start the timer
 sudo -u atuin systemctl --user daemon-reload
