@@ -26,7 +26,7 @@ Volume=%h/config:/config:Z
 PublishPort=127.0.0.1:8888:8888
 
 # Health check
-HealthCmd=curl -f http://localhost:8888/healthz || exit 1
+HealthCmd=bash -c 'exec 3<>/dev/tcp/127.0.0.1/8888 && echo -e "GET /healthz HTTP/1.0\r\nHost: 127.0.0.1\r\n\r\n" >&3 && grep -q "200 OK" <&3'
 HealthInterval=30s
 HealthTimeout=10s
 HealthRetries=3
