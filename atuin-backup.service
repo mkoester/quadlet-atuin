@@ -3,4 +3,5 @@ Description=Atuin SQLite backup
 
 [Service]
 Type=oneshot
+UMask=0027
 ExecStart=/usr/bin/sqlite3 %h/config/atuin.db ".backup /var/backups/atuin/atuin.db"

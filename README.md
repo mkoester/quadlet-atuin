@@ -80,6 +80,7 @@ The backup writes a consistent SQLite snapshot to `/var/backups/atuin/` via `sql
 sudo mkdir -p /var/backups/atuin
 sudo chown atuin:backup-readers /var/backups/atuin
 sudo chmod 2750 /var/backups/atuin
+sudo setfacl -R -m g:backup-readers:rX,d:g:backup-readers:rX /var/backups/atuin
 
 # 2. Symlink the backup service and timer from the repo
 sudo -u atuin mkdir -p ~atuin/.config/systemd/user
